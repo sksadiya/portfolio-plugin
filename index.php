@@ -10,7 +10,32 @@ Author: Your Name
 if (!defined('ABSPATH')) {
     exit;
 }
+function portfolio_enqueue_scripts() {
+    // Enqueue jQuery.
+    wp_enqueue_script( 'jquery' );
 
+    // enqueue bootstrap styles and script
+    wp_enqueue_script( 'bootstrap-js', plugins_url( '/src/assets/bootstrap/dist/js/bootstrap.min.js', __FILE__ ), array( 'jquery' ), '5.0.0', true );
+    wp_enqueue_style( 'bootstrap-css', plugins_url( '/src/assets/bootstrap/dist/css/bootstrap.min.css', __FILE__ ), array(), '5.0.0', 'all' );
+    wp_enqueue_style( 'bootstrap-icons-css', plugins_url( '/src/assets/bootstrap-icons/font/bootstrap-icons.css', __FILE__ ), array(), '1.7.0', 'all' );
+
+		// enqueue dropzone styles and script
+    wp_enqueue_style( 'dropzone-css', plugins_url( '/src/assets/dropzone/min/dropzone.min.css', __FILE__ ), array(), '1.7.0', 'all' );
+    wp_enqueue_script( 'dropzone-js', plugins_url( '/src/assets/dropzone/dropzone.js', __FILE__ ), array( 'jquery' ), '5.0.0', true );
+
+
+		// enqueue custom styles and script
+    wp_enqueue_script( 'custom-js', plugins_url( '/src/js/custom.js', __FILE__ ), array( 'jquery' ), '1.0', true );
+    wp_enqueue_style( 'product-review-style', plugins_url( '/src/css/style.css', __FILE__ ), array(), '1.0', 'all' );
+
+		wp_localize_script('custom-js', 'portfolioData', array(
+			'uploadUrl' => rest_url('wp/v2/uploads_gallery'),
+			'nonce' => wp_create_nonce('wp_rest')
+	));
+    
+}
+add_action( 'admin_enqueue_scripts', 'portfolio_enqueue_scripts' );
+add_action( 'wp_enqueue_scripts', 'portfolio_enqueue_scripts' );
 // Register Custom Post Type
 function create_portfolio_post_type() {
     $labels = array(
@@ -46,7 +71,7 @@ function create_portfolio_post_type() {
         'label'                 => __('Portfolio', 'text_domain'),
         'description'           => __('Portfolio Description', 'text_domain'),
         'labels'                => $labels,
-        'supports'              => array('title', 'editor', 'thumbnail'),
+        'supports'              => array('title','thumbnail'),
         'taxonomies'            => array('portfolio_category'),
         'hierarchical'          => false,
         'public'                => true,
@@ -62,6 +87,7 @@ function create_portfolio_post_type() {
         'publicly_queryable'    => true,
         'rewrite'               => array('slug' => 'portfolio'),
         'capability_type'       => 'post',
+				'show_in_rest'          => true, // This enables REST API access
     );
     register_post_type('portfolio', $args);
 }
@@ -140,3 +166,129 @@ function add_portfolio_category_search_bar($taxonomy) {
     }
 }
 add_action('restrict_manage_terms', 'add_portfolio_category_search_bar');
+
+function portfolio_add_meta_boxes() {
+	add_meta_box('portfolio_media_meta_box', __('Media', 'portfolio'), 'portfolio_media_meta_box_html', 'portfolio', 'normal', 'high');
+}
+add_action('add_meta_boxes', 'portfolio_add_meta_boxes');
+
+function portfolio_media_meta_box_html($post) {
+	$image_ids = get_post_meta($post->ID, 'image_array', true); // Retrieve saved image IDs
+	$image_ids = is_array($image_ids) ? $image_ids : array();
+
+	?>
+	<div style="width: 100%;">
+			<div class="card mb-3 col-md-12">
+					<div class="card-body">
+							<h2 class="h4 mb-3">Media</h2>
+							<div id="portfolio-image-dropzone" class="dropzone dz-clickable">
+									<div class="dz-message needsclick">
+											<br>Drop files here or click to upload.<br><br>
+									</div>
+							</div>
+					</div>
+			</div>
+	</div>
+	<div class="row" id="product-gallery">
+			<?php foreach ($image_ids as $image_id): ?>
+					<?php $image_url = wp_get_attachment_url($image_id); ?>
+					<div class="col-md-3" id="image-row-<?php echo esc_attr($image_id); ?>">
+							<div class="card">
+									<input type="hidden" name="image_array[]" value="<?php echo esc_attr($image_id); ?>">
+									<img src="<?php echo esc_url($image_url); ?>" class="card-img-top" alt="...">
+									<div class="card-body">
+											<a href="javascript:void(0)" onclick="deleteImage(<?php echo esc_attr($image_id); ?>)" class="btn btn-danger">Delete</a>
+									</div>
+							</div>
+					</div>
+			<?php endforeach; ?>
+	</div>
+	<?php
+}
+
+add_action('save_post', 'save_portfolio_meta');
+function save_portfolio_meta($post_id) {
+	if (array_key_exists('image_array', $_POST)) {
+			update_post_meta($post_id, 'image_array', $_POST['image_array']);
+	}
+}
+
+
+
+// Handle File Upload for Portfolio
+function handle_portfolio_upload( $request ) {
+	if (empty($_FILES['file'])) {
+			return new WP_Error('no_file', 'No file provided', array('status' => 400));
+	}
+
+	$file = $_FILES['file'];
+
+	// Handle file upload
+	require_once(ABSPATH . 'wp-admin/includes/file.php');
+	require_once(ABSPATH . 'wp-admin/includes/media.php');
+	require_once(ABSPATH . 'wp-admin/includes/image.php');
+
+	$attachment_id = media_handle_upload('file', 0); // 0 to not attach to any post
+
+	if (is_wp_error($attachment_id)) {
+			return $attachment_id;
+	}
+
+	// Get attachment URL
+	$attachment_url = wp_get_attachment_url($attachment_id);
+
+	// Prepare response
+	$response = array(
+			'image_id' => $attachment_id,
+			'imagePath' => $attachment_url
+	);
+
+	return rest_ensure_response($response);
+}
+
+function register_portfolio_upload_route() {
+	register_rest_route(
+			'portfolio/v1',
+			'/upload/',
+			array(
+					'methods'  => 'POST',
+					'callback' => 'handle_portfolio_upload',
+					'permission_callback' => '__return_true', // Simplified permission callback for testing
+			)
+	);
+}
+add_action('rest_api_init', 'register_portfolio_upload_route');
+
+
+add_action('rest_api_init', function () {
+	register_rest_route('wp/v2', '/uploads_gallery/', array(
+		'methods' => 'POST',
+		'callback' => 'handle_portfolio_upload',
+		'permission_callback' => '__return_true',
+	));
+});
+
+
+function register_routes_list_endpoint() {
+	register_rest_route(
+			'custom-plugin/v1',
+			'/routes/',
+			array(
+					'methods'  => 'GET',
+					'callback' => 'get_registered_routes',
+			)
+	);
+}
+add_action('rest_api_init', 'register_routes_list_endpoint');
+
+// Callback function to retrieve and return registered routes
+function get_registered_routes() {
+	$registered_routes = rest_get_server()->get_routes();
+	$routes_list = array();
+
+	foreach ($registered_routes as $route => $route_data) {
+			$routes_list[] = $route;
+	}
+
+	return rest_ensure_response($routes_list);
+}
