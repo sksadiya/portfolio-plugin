@@ -26,7 +26,6 @@ function portfolio_enqueue_scripts() {
 
 		// enqueue custom styles and script
     wp_enqueue_script( 'custom-js', plugins_url( '/src/js/custom.js', __FILE__ ), array( 'jquery' ), '1.0', true );
-    wp_enqueue_style( 'product-review-style', plugins_url( '/src/css/style.css', __FILE__ ), array(), '1.0', 'all' );
 
 		wp_localize_script('custom-js', 'portfolioData', array(
 			'uploadUrl' => rest_url('wp/v2/uploads_gallery'),
@@ -35,7 +34,30 @@ function portfolio_enqueue_scripts() {
     
 }
 add_action( 'admin_enqueue_scripts', 'portfolio_enqueue_scripts' );
-add_action( 'wp_enqueue_scripts', 'portfolio_enqueue_scripts' );
+
+function portfolio_front_script() {
+    wp_enqueue_script( 'jquery' );
+
+    // enqueue bootstrap styles and script
+    wp_enqueue_style( 'portfolio-style', plugins_url( '/src/css/style.css', __FILE__ ), array(), '1.0', 'all' );
+
+    wp_enqueue_script( 'bootstrap-js', plugins_url( '/src/assets/bootstrap/dist/js/bootstrap.min.js', __FILE__ ), array( 'jquery' ), '5.0.0', true );
+    wp_enqueue_style( 'bootstrap-css', plugins_url( '/src/assets/bootstrap/dist/css/bootstrap.min.css', __FILE__ ), array(), '5.0.0', 'all' );
+    wp_enqueue_style( 'bootstrap-icons-css', plugins_url( '/src/assets/bootstrap-icons/font/bootstrap-icons.css', __FILE__ ), array(), '1.7.0', 'all' );
+    wp_enqueue_style( 'product-review-style', plugins_url( '/src/css/style.css', __FILE__ ), array(), '1.0', 'all' );
+
+    // Enqueue Magnific Popup CSS and JS
+    wp_enqueue_style('magnific-popup-css', 'https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css');
+        wp_enqueue_script('magnific-popup-js', 'https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js', array('jquery'), null, true);
+
+            
+    wp_enqueue_script( 'slick-carousel', plugins_url('/src/assets/slick/slick.min.js',__FILE__), array( 'jquery' ), '1.9.0', true );
+    wp_enqueue_style( 'slick-carousel-css', plugins_url('/src/assets/slick/slick.css',__FILE__), array(), '1.9.0', 'all' );
+    wp_enqueue_style( 'slick-theme-css', plugins_url('/src/assets/slick/slick-theme.css',__FILE__), array(), '1.9.0', 'all' );
+    wp_enqueue_script( 'slick-js', plugins_url( '/src/js/admin-custom.js', __FILE__ ), array( 'jquery' ), '1.0', true );
+
+}
+add_action( 'wp_enqueue_scripts', 'portfolio_front_script' );
 // Register Custom Post Type
 function create_portfolio_post_type() {
     $labels = array(
@@ -169,6 +191,7 @@ add_action('restrict_manage_terms', 'add_portfolio_category_search_bar');
 
 function portfolio_add_meta_boxes() {
 	add_meta_box('portfolio_media_meta_box', __('Media', 'portfolio'), 'portfolio_media_meta_box_html', 'portfolio', 'normal', 'high');
+    add_meta_box('portfolio_description_meta_box', __('Description', 'portfolio'), 'portfolio_description_meta_box_html', 'portfolio', 'normal', 'high');
 }
 add_action('add_meta_boxes', 'portfolio_add_meta_boxes');
 
@@ -178,7 +201,7 @@ function portfolio_media_meta_box_html($post) {
 
 	?>
 	<div style="width: 100%;">
-			<div class="card mb-3 col-md-12">
+			<div class="col-lg-12">
 					<div class="card-body">
 							<h2 class="h4 mb-3">Media</h2>
 							<div id="portfolio-image-dropzone" class="dropzone dz-clickable">
@@ -205,15 +228,37 @@ function portfolio_media_meta_box_html($post) {
 	</div>
 	<?php
 }
+function portfolio_description_meta_box_html($post) {
+    $description = get_post_meta($post->ID, '_portfolio_description', true);
 
+    ?>
+        <div class="col-lg-12">
+            <div class="card-body">
+                <h2 class="h4 mb-3">Description</h2>
+                <?php
+                wp_editor(
+                    $description,
+                    'portfolio_description',
+                    array(
+                        'textarea_name' => 'portfolio_description',
+                        'media_buttons' => true,
+                        'textarea_rows' => 10,
+                    )
+                );
+                ?>
+            </div>
+        </div>
+    <?php
+}
 add_action('save_post', 'save_portfolio_meta');
 function save_portfolio_meta($post_id) {
 	if (array_key_exists('image_array', $_POST)) {
 			update_post_meta($post_id, 'image_array', $_POST['image_array']);
 	}
+    if (array_key_exists('portfolio_description', $_POST)) {
+        update_post_meta($post_id, '_portfolio_description', sanitize_text_field($_POST['portfolio_description']));
+    }
 }
-
-
 
 // Handle File Upload for Portfolio
 function handle_portfolio_upload( $request ) {
@@ -240,7 +285,7 @@ function handle_portfolio_upload( $request ) {
 	// Prepare response
 	$response = array(
 			'image_id' => $attachment_id,
-			'imagePath' => $attachment_url
+			'imagePath' => $attachment_url,
 	);
 
 	return rest_ensure_response($response);
@@ -292,3 +337,15 @@ function get_registered_routes() {
 
 	return rest_ensure_response($routes_list);
 }
+
+
+function load_portfolio_template($template) {
+    if (is_singular('portfolio')) {
+        $plugin_template = plugin_dir_path(__FILE__) . 'single-portfolio.php';
+        if (file_exists($plugin_template)) {
+            return $plugin_template;
+        }
+    }
+    return $template;
+}
+add_filter('template_include', 'load_portfolio_template');
