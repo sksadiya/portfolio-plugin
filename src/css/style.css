@@ -1,0 +1,18 @@
+body {
+  font-family: 'Poppins', sans-serif !important;
+}
+.btn-hover-primary:hover {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+.form-control , .form-control:hover {
+  height: 56px;
+  font-size: 16px;
+  background-color: #f6f8fd !important;
+    border: none !important;
+}
+input:focus , select:focus{
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}

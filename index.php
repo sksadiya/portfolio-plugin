@@ -10,54 +10,47 @@ Author: Your Name
 if (!defined('ABSPATH')) {
     exit;
 }
+// Enqueue scripts and styles for both admin and front end
 function portfolio_enqueue_scripts() {
-    // Enqueue jQuery.
-    wp_enqueue_script( 'jquery' );
+    wp_enqueue_script('jquery');
 
-    // enqueue bootstrap styles and script
-    wp_enqueue_script( 'bootstrap-js', plugins_url( '/src/assets/bootstrap/dist/js/bootstrap.min.js', __FILE__ ), array( 'jquery' ), '5.0.0', true );
-    wp_enqueue_style( 'bootstrap-css', plugins_url( '/src/assets/bootstrap/dist/css/bootstrap.min.css', __FILE__ ), array(), '5.0.0', 'all' );
-    wp_enqueue_style( 'bootstrap-icons-css', plugins_url( '/src/assets/bootstrap-icons/font/bootstrap-icons.css', __FILE__ ), array(), '1.7.0', 'all' );
-
-		// enqueue dropzone styles and script
-    wp_enqueue_style( 'dropzone-css', plugins_url( '/src/assets/dropzone/min/dropzone.min.css', __FILE__ ), array(), '1.7.0', 'all' );
-    wp_enqueue_script( 'dropzone-js', plugins_url( '/src/assets/dropzone/dropzone.js', __FILE__ ), array( 'jquery' ), '5.0.0', true );
-
-
-		// enqueue custom styles and script
-    wp_enqueue_script( 'custom-js', plugins_url( '/src/js/custom.js', __FILE__ ), array( 'jquery' ), '1.0', true );
-
-		wp_localize_script('custom-js', 'portfolioData', array(
-			'uploadUrl' => rest_url('wp/v2/uploads_gallery'),
-			'nonce' => wp_create_nonce('wp_rest')
-	));
-    
-}
-add_action( 'admin_enqueue_scripts', 'portfolio_enqueue_scripts' );
-
-function portfolio_front_script() {
-    wp_enqueue_script( 'jquery' );
-
-    // enqueue bootstrap styles and script
-    wp_enqueue_style( 'portfolio-style', plugins_url( '/src/css/style.css', __FILE__ ), array(), '1.0', 'all' );
-
-    wp_enqueue_script( 'bootstrap-js', plugins_url( '/src/assets/bootstrap/dist/js/bootstrap.min.js', __FILE__ ), array( 'jquery' ), '5.0.0', true );
-    wp_enqueue_style( 'bootstrap-css', plugins_url( '/src/assets/bootstrap/dist/css/bootstrap.min.css', __FILE__ ), array(), '5.0.0', 'all' );
-    wp_enqueue_style( 'bootstrap-icons-css', plugins_url( '/src/assets/bootstrap-icons/font/bootstrap-icons.css', __FILE__ ), array(), '1.7.0', 'all' );
-    wp_enqueue_style( 'product-review-style', plugins_url( '/src/css/style.css', __FILE__ ), array(), '1.0', 'all' );
-
-    // Enqueue Magnific Popup CSS and JS
+    // Enqueue styles and scripts common to both admin and front end
+    wp_enqueue_style('portfolio-style', plugins_url('/src/css/style.css', __FILE__), array(), '1.0', 'all');
     wp_enqueue_style('magnific-popup-css', 'https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css');
-        wp_enqueue_script('magnific-popup-js', 'https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js', array('jquery'), null, true);
+    wp_enqueue_script('magnific-popup-js', 'https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js', array('jquery'), null, true);
+    wp_enqueue_style('poppins-font', plugins_url('/src/font/Poppins/Poppins-Regular.ttf', __FILE__), array(), null);
+    wp_enqueue_style('poppins-semi-bold', plugins_url('/src/font/Poppins/Poppins-SemiBold.ttf', __FILE__), array(), null);
+    wp_enqueue_script('slick-carousel', plugins_url('/src/assets/slick/slick.min.js', __FILE__), array('jquery'), '1.9.0', true);
+    wp_enqueue_style('slick-carousel-css', plugins_url('/src/assets/slick/slick.css', __FILE__), array(), '1.9.0', 'all');
+    wp_enqueue_style('slick-theme-css', plugins_url('/src/assets/slick/slick-theme.css', __FILE__), array(), '1.9.0', 'all');
 
-            
-    wp_enqueue_script( 'slick-carousel', plugins_url('/src/assets/slick/slick.min.js',__FILE__), array( 'jquery' ), '1.9.0', true );
-    wp_enqueue_style( 'slick-carousel-css', plugins_url('/src/assets/slick/slick.css',__FILE__), array(), '1.9.0', 'all' );
-    wp_enqueue_style( 'slick-theme-css', plugins_url('/src/assets/slick/slick-theme.css',__FILE__), array(), '1.9.0', 'all' );
-    wp_enqueue_script( 'slick-js', plugins_url( '/src/js/admin-custom.js', __FILE__ ), array( 'jquery' ), '1.0', true );
+    // Enqueue bootstrap styles and scripts
+    wp_enqueue_script('bootstrap-js', plugins_url('/src/assets/bootstrap/dist/js/bootstrap.min.js', __FILE__), array('jquery'), '5.0.0', true);
+    wp_enqueue_style('bootstrap-css', plugins_url('/src/assets/bootstrap/dist/css/bootstrap.min.css', __FILE__), array(), '5.0.0', 'all');
+    wp_enqueue_style('bootstrap-icons-css', plugins_url('/src/assets/bootstrap-icons/font/bootstrap-icons.css', __FILE__), array(), '1.7.0', 'all');
 
+    // Check if the current screen is admin
+    if (is_admin()) {
+       // Enqueue scripts for the front end
+       wp_enqueue_script('portfolio-front-script', plugins_url('/src/js/custom.js', __FILE__), array('jquery'), '1.0', true);
+       wp_localize_script('portfolio-front-script', 'MyPluginData', array(
+           'ajax_url' => admin_url('admin-ajax.php'),
+           'nonce' => wp_create_nonce('wp_rest')
+       ));
+    } else {
+        wp_enqueue_script('admin-custom-js', plugins_url('/src/js/admin-custom.js', __FILE__), array('jquery'), '1.0', true);
+        wp_localize_script('admin-custom-js', 'portfolioData', array(
+            'uploadUrl' => rest_url('wp/v2/uploads_gallery'),
+            'nonce' => wp_create_nonce('wp_rest'),
+            'ajax_url' => admin_url('admin-ajax.php')
+        ));
+        
+    }
 }
-add_action( 'wp_enqueue_scripts', 'portfolio_front_script' );
+add_action('admin_enqueue_scripts', 'portfolio_enqueue_scripts');
+add_action('wp_enqueue_scripts', 'portfolio_enqueue_scripts');
+
+
 // Register Custom Post Type
 function create_portfolio_post_type() {
     $labels = array(
@@ -151,6 +144,101 @@ function create_portfolio_category_taxonomy() {
     register_taxonomy('portfolio_category', array('portfolio'), $args);
 }
 add_action('init', 'create_portfolio_category_taxonomy', 0);
+
+function register_enquiry_post_type() {
+    $labels = array(
+        'name'               => _x('Enquiries', 'post type general name', 'your-textdomain'),
+        'singular_name'      => _x('Enquiry', 'post type singular name', 'your-textdomain'),
+        'menu_name'          => _x('Enquiries', 'admin menu', 'your-textdomain'),
+        'name_admin_bar'     => _x('Enquiry', 'add new on admin bar', 'your-textdomain'),
+        'add_new'            => _x('Add New', 'enquiry', 'your-textdomain'),
+        'add_new_item'       => __('Add New Enquiry', 'your-textdomain'),
+        'new_item'           => __('New Enquiry', 'your-textdomain'),
+        'edit_item'          => __('Edit Enquiry', 'your-textdomain'),
+        'view_item'          => __('View Enquiry', 'your-textdomain'),
+        'all_items'          => __('All Enquiries', 'your-textdomain'),
+        'search_items'       => __('Search Enquiries', 'your-textdomain'),
+        'parent_item_colon'  => __('Parent Enquiries:', 'your-textdomain'),
+        'not_found'          => __('No enquiries found.', 'your-textdomain'),
+        'not_found_in_trash' => __('No enquiries found in Trash.', 'your-textdomain')
+    );
+
+    $args = array(
+        'labels'             => $labels,
+        'public'             => false,
+        'publicly_queryable' => false,
+        'show_ui'            => true,
+        'show_in_menu'       => true,
+        'query_var'          => true,
+        'rewrite'            => array('slug' => 'enquiry'),
+        'capability_type'    => 'post',
+        'capabilities'       => array(
+            'create_posts' => false, // Removes support for "Add New"
+        ),
+        'map_meta_cap'       => true,
+        'has_archive'        => false,
+        'hierarchical'       => false,
+        'menu_position'      => null,
+        'supports'           => array('title', 'custom-fields')
+    );
+
+    register_post_type('enquiry', $args);
+}
+add_action('init', 'register_enquiry_post_type');
+
+
+
+
+
+function set_custom_enquiry_columns($columns) {
+    $columns = array(
+        'cb' => '<input type="checkbox" />',
+        'title' => __('Name'),
+        'email' => __('Email'),
+        'phone' => __('Phone'),
+        'property' => __('Property'),
+        'date' => __('Date'),
+    );
+    return $columns;
+}
+add_filter('manage_enquiry_posts_columns', 'set_custom_enquiry_columns');
+
+function custom_enquiry_column($column, $post_id) {
+    switch ($column) {
+        case 'email':
+            echo get_post_meta($post_id, 'email', true);
+            break;
+        case 'phone':
+            echo get_post_meta($post_id, 'phone', true);
+            break;
+        case 'property':
+            echo get_post_meta($post_id, 'property', true);
+            break;
+    }
+}
+add_action('manage_enquiry_posts_custom_column', 'custom_enquiry_column', 10, 2);
+
+function add_custom_enquiry_metaboxes() {
+    add_meta_box(
+        'custom_enquiry_details_metabox',
+        'Enquiry Details',
+        'custom_enquiry_details_metabox_content',
+        'enquiry',
+        'normal',
+        'high'
+    );
+}
+add_action( 'add_meta_boxes', 'add_custom_enquiry_metaboxes' );
+
+function custom_enquiry_details_metabox_content( $post ) {
+    $email = get_post_meta( $post->ID, 'email', true );
+    $phone = get_post_meta( $post->ID, 'phone', true );
+    $property = get_post_meta( $post->ID, 'property', true );
+
+    echo '<p><strong>Email:</strong> ' . esc_html( $email ) . '</p>';
+    echo '<p><strong>Phone:</strong> ' . esc_html( $phone ) . '</p>';
+    echo '<p><strong>Property:</strong> ' . esc_html( $property ) . '</p>';
+}
 
 // Flush rewrite rules on activation
 function portfolio_plugin_activate() {
@@ -349,3 +437,69 @@ function load_portfolio_template($template) {
     return $template;
 }
 add_filter('template_include', 'load_portfolio_template');
+
+
+
+function my_custom_image_sizes() {
+    add_image_size('custom-size', 752, 501, true); 
+    add_image_size('small-size', 300, 200, true); 
+}
+add_action('after_setup_theme', 'my_custom_image_sizes');
+
+function process_enquiry_form() {
+    // Verify nonce
+    $nonce = isset( $_POST['security'] ) ? sanitize_text_field( wp_unslash( $_POST['security'] ) ) : '';
+    if ( ! isset( $nonce ) || ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
+        wp_send_json_error( 'Invalid nonce' );
+    }
+
+    $form_data = array();
+    parse_str( $_POST['form_data'], $form_data );
+
+    $name = isset( $form_data['name'] ) ? sanitize_text_field( $form_data['name'] ) : '';
+    $email = isset( $form_data['email'] ) ? sanitize_email( $form_data['email'] ) : '';
+    $phone = isset( $form_data['phone'] ) ? sanitize_text_field( $form_data['phone'] ) : '';
+    $property = isset( $form_data['property'] ) ? sanitize_text_field( $form_data['property'] ) : '';
+
+    // Validation
+    $errors = array();
+    if ( strlen( $name ) < 3 ) {
+        $errors['name'] = 'Name must be at least 3 characters long.';
+    }
+    if ( ! filter_var( $email, FILTER_VALIDATE_EMAIL ) ) {
+        $errors['email'] = 'Please enter a valid email address.';
+    }
+    if ( strlen( $phone ) != 10 || ! is_numeric( $phone ) ) {
+        $errors['phone'] = 'Phone number must be exactly 10 digits.';
+    }
+    if ( empty( $property ) ) {
+        $errors['property'] = 'Please select a property.';
+    }
+
+    if ( ! empty( $errors ) ) {
+        wp_send_json_error( $errors );
+    } else {
+        // Auto-generate the title
+        $title = 'Enquiry from ' . $name . ' - ' . date('Y-m-d H:i:s');
+
+        // Insert the enquiry post
+        $enquiry_post = array(
+            'post_title'   => $title,
+            'post_status'  => 'publish',
+            'post_type'    => 'enquiry'
+        );
+
+        $post_id = wp_insert_post($enquiry_post);
+
+        // Save the custom fields
+        update_post_meta($post_id, 'name', $name);
+        update_post_meta($post_id, 'email', $email);
+        update_post_meta($post_id, 'phone', $phone);
+        update_post_meta($post_id, 'property', $property);
+
+        wp_send_json_success('Enquiry submitted successfully!');
+    }
+
+}
+add_action( 'wp_ajax_process_enquiry_form', 'process_enquiry_form' );
+add_action( 'wp_ajax_nopriv_process_enquiry_form', 'process_enquiry_form' );
