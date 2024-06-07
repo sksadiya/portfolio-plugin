@@ -3,7 +3,7 @@ Dropzone.autoDiscover = false;
 jQuery(document).ready(function($) {
     // Initialize Dropzone
     var myDropzone = new Dropzone("#portfolio-image-dropzone", {
-        url: portfolioData.uploadUrl,
+        url: MyPluginData.uploadUrl,
         paramName: "file", // The name that will be used to transfer the file
         maxFilesize: 10, // MB
         acceptedFiles: "image/*",

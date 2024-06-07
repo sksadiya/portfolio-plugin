@@ -25,22 +25,26 @@ function portfolio_enqueue_scripts() {
     wp_enqueue_style('slick-theme-css', plugins_url('/src/assets/slick/slick-theme.css', __FILE__), array(), '1.9.0', 'all');
 
     // Enqueue bootstrap styles and scripts
-    wp_enqueue_script('bootstrap-js', plugins_url('/src/assets/bootstrap/dist/js/bootstrap.min.js', __FILE__), array('jquery'), '5.0.0', true);
     wp_enqueue_style('bootstrap-css', plugins_url('/src/assets/bootstrap/dist/css/bootstrap.min.css', __FILE__), array(), '5.0.0', 'all');
+    // wp_enqueue_script('bootstrap-js', plugins_url('/src/assets/bootstrap/dist/js/bootstrap.bundle.min.js', __FILE__), array('jquery'), '5.0.0', true);
+    
     wp_enqueue_style('bootstrap-icons-css', plugins_url('/src/assets/bootstrap-icons/font/bootstrap-icons.css', __FILE__), array(), '1.7.0', 'all');
-
+    // Enqueue Bootstrap JS
+    wp_enqueue_script('bootstrap-js', 'https://stackpath.bootstrapcdn.com/bootstrap/5.1.0/js/bootstrap.bundle.min.js', array('jquery'), null, true);
     // Check if the current screen is admin
     if (is_admin()) {
-       // Enqueue scripts for the front end
+        wp_enqueue_style('dropzone-css', plugins_url('/src/assets/dropzone/min/dropzone.min.css', __FILE__), array(), '1.7.0', 'all');
+        wp_enqueue_script('dropzone-js', plugins_url('/src/assets/dropzone/dropzone.js', __FILE__), array('jquery'), '5.0.0', true);
+
        wp_enqueue_script('portfolio-front-script', plugins_url('/src/js/custom.js', __FILE__), array('jquery'), '1.0', true);
        wp_localize_script('portfolio-front-script', 'MyPluginData', array(
+        'uploadUrl' => rest_url('wp/v2/uploads_gallery'),
            'ajax_url' => admin_url('admin-ajax.php'),
            'nonce' => wp_create_nonce('wp_rest')
        ));
     } else {
         wp_enqueue_script('admin-custom-js', plugins_url('/src/js/admin-custom.js', __FILE__), array('jquery'), '1.0', true);
         wp_localize_script('admin-custom-js', 'portfolioData', array(
-            'uploadUrl' => rest_url('wp/v2/uploads_gallery'),
             'nonce' => wp_create_nonce('wp_rest'),
             'ajax_url' => admin_url('admin-ajax.php')
         ));

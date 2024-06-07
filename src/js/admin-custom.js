@@ -1,4 +1,17 @@
 jQuery(document).ready(function($) {
+    $('#accordionExample .accordion-button').click(function() {
+        var target = $(this).attr('data-bs-target');
+        var $target = $(target);
+
+        if ($target.hasClass('show')) {
+            $target.collapse('hide');
+        } else {
+            $('#accordionExample .accordion-collapse').collapse('hide');
+            $target.collapse('show');
+        }
+    });
+});
+jQuery(document).ready(function($) {
     // Initialize Slick Carousel
     $('.portfolio-carousel').slick({
         infinite: true,
@@ -15,7 +28,22 @@ jQuery(document).ready(function($) {
         adaptiveHeight: true
     });
 
-    $('.portfolio-carousel').magnificPopup({
+    $('.portfolio-magnificPopup').magnificPopup({
+        delegate: 'a.mfp-gallery', // child items selector, by clicking on it popup will open
+        type: 'image',
+        gallery: {
+            enabled: true, // enable gallery mode
+            tPrev: 'Previous (Left arrow key)', // title for left button
+            tNext: 'Next (Right arrow key)', // title for right button
+            tCounter: ' ' // markup of counter
+        },
+        callbacks: {
+            elementParse: function(item) {
+                item.src = item.el.attr('data-large'); // Use the 'data-large' attribute for the image source
+            }
+        }
+    });
+    $('.portfolio-magnificPopup-2').magnificPopup({
         delegate: 'a.mfp-gallery', // child items selector, by clicking on it popup will open
         type: 'image',
         gallery: {
