@@ -437,6 +437,16 @@ function load_portfolio_template($template) {
         if (file_exists($plugin_template)) {
             return $plugin_template;
         }
+    } elseif (is_post_type_archive('portfolio')) {
+        $plugin_template = plugin_dir_path(__FILE__) . 'archive-portfolio.php';
+        if (file_exists($plugin_template)) {
+            return $plugin_template;
+        }
+    } elseif (is_tax('portfolio_category')) { // Replace 'portfolio_category' with your actual taxonomy
+        $plugin_template = plugin_dir_path(__FILE__) . 'taxonomy-portfolio.php';
+        if (file_exists($plugin_template)) {
+            return $plugin_template;
+        }
     }
     return $template;
 }
@@ -447,6 +457,7 @@ add_filter('template_include', 'load_portfolio_template');
 function my_custom_image_sizes() {
     add_image_size('custom-size', 752, 501, true); 
     add_image_size('small-size', 300, 200, true); 
+    add_image_size('portfolio-archive', 414, 240, true); 
 }
 add_action('after_setup_theme', 'my_custom_image_sizes');
 
@@ -501,7 +512,21 @@ function process_enquiry_form() {
         update_post_meta($post_id, 'phone', $phone);
         update_post_meta($post_id, 'property', $property);
 
-        wp_send_json_success('Enquiry submitted successfully!');
+        // Send email to admin
+        $admin_email = get_option('admin_email');
+        $subject = 'New Enquiry from ' . $name;
+        $message = "You have received a new enquiry from $name.\n\n" .
+                   "Details:\n" .
+                   "Name: $name\n" .
+                   "Email: $email\n" .
+                   "Phone: $phone\n" .
+                   "Property: $property\n\n" .
+                   "Please check the enquiries section for more details.";
+
+        wp_mail($admin_email, $subject, $message);
+
+
+        wp_send_json_success('Enquiry submitted & email successfully!');
     }
 
 }

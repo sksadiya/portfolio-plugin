@@ -1,16 +1,13 @@
 jQuery(document).ready(function($) {
-    $('#accordionExample .accordion-button').click(function() {
-        var target = $(this).attr('data-bs-target');
-        var $target = $(target);
-
-        if ($target.hasClass('show')) {
-            $target.collapse('hide');
-        } else {
-            $('#accordionExample .accordion-collapse').collapse('hide');
-            $target.collapse('show');
-        }
+    $('.slick-archive-carousel').slick({
+        infinite: true,
+        speed: 600,
+        slidesToShow: 1,
+       prevArrow: '<button class="slick-prev" aria-label="Previous" type="button"><i class="bi bi-arrow-left-circle"></i></button>',
+        nextArrow: '<button class="slick-next" aria-label="Next" type="button"><i class="bi bi-arrow-right-circle"></i></button>'
     });
 });
+
 jQuery(document).ready(function($) {
     // Initialize Slick Carousel
     $('.portfolio-carousel').slick({
