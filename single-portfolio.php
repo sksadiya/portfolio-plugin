@@ -28,7 +28,7 @@ if (have_posts()):
         ?>
         <div class="container mb-4">
             <div class="row">
-                <div class="col-md-8">
+                <div class="col-lg-8 col-md-12">
                     <?php require_once plugin_dir_path(__FILE__) . 'includes/ratings-section.php'; ?>
                     <?php require_once plugin_dir_path(__FILE__) . 'includes/accordians.php'; ?>
                 </div>

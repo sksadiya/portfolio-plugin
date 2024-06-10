@@ -1,4 +1,4 @@
-<div class="col-md-4">
+<div class="col-lg-4 col-md-12">
                     <div class="card">
                         <div class="card-header text-white py-4" style="background: #0fca98;">
                             <h5 class="card-title mb-0" style="font-family: 'Poppins', sans-serif;">Enquiry Form</h5>

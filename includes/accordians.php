@@ -33,17 +33,19 @@
                                         <div class="row">
                                             <?php foreach ($image_ids as $image_id): ?>
                                                 <?php
-                                                $image_src = wp_get_attachment_image_src($image_id, 'thumbnail');
+                                                $image_src = wp_get_attachment_image_src($image_id, 'large');
                                                 $image_full_src = wp_get_attachment_image_src($image_id, 'custom-size');
                                                 $image_url = $image_src ? $image_src[0] : '';
                                                 $image_full_url = $image_full_src ? $image_full_src[0] : '';
                                                 ?>
-                                                <div class="col-md-3 portfolio-magnificPopup-2">
+                                                <div class="col-lg-3 col-md-6 col-sm-12 col-xs-12 mb-2 portfolio-magnificPopup-2">
+                                                    <div class="card">
                                                     <a href="<?php echo esc_url($image_full_url); ?>" class="mfp-gallery"
                                                         data-large="<?php echo esc_url($image_full_url); ?>">
-                                                        <img src="<?php echo esc_url($image_url); ?>" height="146px" width="159px"
+                                                        <img src="<?php echo esc_url($image_url); ?>" class="card-img-top" 
                                                             alt="...">
                                                     </a>
+                                                    </div>
                                                 </div>
 
                                             <?php endforeach; ?>

@@ -22,7 +22,25 @@ jQuery(document).ready(function($) {
         autoplaySpeed: 3000,
         prevArrow: '<button class="slick-prev" aria-label="Previous" type="button">Previous</button>',
         nextArrow: '<button class="slick-next" aria-label="Next" type="button">Next</button>',
-        adaptiveHeight: true
+        adaptiveHeight: true,
+        responsive: [
+            {
+                breakpoint: 1024, // Tablet breakpoint
+                settings: {
+                    slidesToShow: 1,
+                    slidesToScroll: 1,
+                    centerMode: false // Optional: disable center mode for tablet
+                }
+            },
+            {
+                breakpoint: 768, // Mobile breakpoint
+                settings: {
+                    slidesToShow: 1,
+                    slidesToScroll: 1,
+                    centerMode: false // Optional: disable center mode for mobile
+                }
+            }
+        ]
     });
 
     $('.portfolio-magnificPopup').magnificPopup({
