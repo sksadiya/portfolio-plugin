@@ -458,7 +458,7 @@ function my_custom_image_sizes() {
     add_image_size('custom-size', 752, 501, true); 
     add_image_size('small-size', 300, 200, true); 
     add_image_size('portfolio-archive', 414, 240, true); 
-    add_image_size('single-dekstop-slider', 660, 450, true); 
+    add_image_size('single-dekstop-slider', 750, 550, true); 
 }
 add_action('after_setup_theme', 'my_custom_image_sizes');
 

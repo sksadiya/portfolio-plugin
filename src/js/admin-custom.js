@@ -79,8 +79,10 @@ jQuery(document).ready(function($) {
     $('#portfolio-enquiry-form').on('submit', function(event) {
         event.preventDefault();
         var submitButton = $(this).find('button[type="submit"]');
-        submitButton.prop('disabled', true);
+        var originalButtonText = submitButton.html();
 
+        submitButton.prop('disabled', true);
+        submitButton.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Sending...');
         var isValid = true;
         var email = $('#email').val();
         var name = $('#name').val();
@@ -124,7 +126,7 @@ jQuery(document).ready(function($) {
         }
 
         if (!isValid) {
-            submitButton.html('Send Enquiry');
+             submitButton.html(originalButtonText);
             submitButton.prop('disabled', false);
             return;
         }
@@ -146,7 +148,8 @@ jQuery(document).ready(function($) {
                     submitButton.text('Thank you for your enquiry!');
                     $('#portfolio-enquiry-form')[0].reset();
                     setTimeout(function () {
-                        window.location.reload();
+                        submitButton.html(originalButtonText);
+                        submitButton.prop('disabled', false);
                     }, 5000);
                 } else {
                     var errors = response.data;
@@ -164,10 +167,12 @@ jQuery(document).ready(function($) {
                         $('#property').addClass('is-invalid').siblings('.invalid-feedback').text(errors.property);
                     }
                 }
+                submitButton.html(originalButtonText);
                 submitButton.prop('disabled', false);
             },
             error: function() {
                 alert('An error occurred while submitting the form. Please try again.');
+                submitButton.html(originalButtonText);
                 submitButton.prop('disabled', false);
             }
         });

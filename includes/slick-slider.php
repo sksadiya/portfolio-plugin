@@ -1,6 +1,6 @@
-<div class="container mt-5 mb-5">
+<div class="container-fluid mt-5 pt-5 p-0 mb-5">
   <?php if ($image_ids): ?>
-    <div class="portfolio-carousel portfolio-magnificPopup">
+    <div class="portfolio-carousel portfolio-magnificPopup mt-2">
       <?php foreach ($image_ids as $image_id): ?>
         <?php
         $image_src = wp_get_attachment_image_src($image_id, 'single-dekstop-slider');
